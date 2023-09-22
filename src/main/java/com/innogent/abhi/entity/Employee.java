@@ -14,16 +14,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-/*
- * @JsonSerialize
- * 
- * @JsonFormat //@JsonSerialize(using = EmployeeSerializer.class)
- */public class Employee implements Serializable {
+public class Employee implements Serializable {
 
-	/* @JsonProperty */
 	@JsonIgnore
 	@ManyToOne
-	@JoinColumn( nullable = false ,name= "company_id")
+	@JoinColumn(nullable = false, name = "company_id")
 	private Company company;
 
 	@Id
@@ -77,9 +72,9 @@ import jakarta.persistence.ManyToOne;
 		this.doj = doj;
 	}
 
-//	@Override
-//	public String toString() {
-//	    return "Employee [id=" + id + ", name=" + name + ", doj=" + doj + "]";
-//	}
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", name=" + name + ", doj=" + doj + "]";
+	}
 
 }

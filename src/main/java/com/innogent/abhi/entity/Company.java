@@ -14,14 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
-@SuppressWarnings("serial")
 @Entity
-/*
- * @JsonSerialize
- * 
- * @JsonFormat
- */
-
 public class Company implements Serializable {
 
 	@Id
@@ -31,13 +24,11 @@ public class Company implements Serializable {
 
 	private String name;
 
-	/* @JsonProperty */
 	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-
 	private List<Employee> employees;
 
 	public Company() {
-		// TODO Auto-generated constructor stub
+		
 	}
 
 	public Company(String name, List<Employee> employees) {
@@ -70,9 +61,12 @@ public class Company implements Serializable {
 		this.employees = employees;
 	}
 
-//	@Override
-//	public String toString() {
-//	    return "Company [id=" + id + ", name=" + name + "]";
-//	}
+	@Override
+	public String toString() {
+		return "Company [id=" + id + ", name=" + name + ", employees=" + employees + "]";
+	}
+	
+
+
 
 }

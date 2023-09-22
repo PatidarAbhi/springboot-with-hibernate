@@ -33,25 +33,17 @@ public class CompanyController {
 		System.out.println("CompanyController.CompanyController()");
 	}
 
+	/**
+	 * For getting list of companies
+	 * 
+	 * @return List<Company>
+	 */
 	@GetMapping("/")
 	public List<Company> getAllComapny() {
 		return companyRepo.findAll();
 	}
 
-	@PostMapping("/")
-	public Company addCompany(@RequestBody Company company) {
-		System.out.println("EmployeeController.addEmployee()");
-		if (company.getEmployees().isEmpty())
-			return companyRepo.save(company);
-		else {
-			List<Employee> employee = company.getEmployees();
-			employee.stream().forEach(e -> e.setCompany(company));
-			System.out.println(employee);
-			company.setEmployees(employee);
-			return companyRepo.save(company);
-		}
-	}
-
+	// for getting company by id
 	@GetMapping("/{id}")
 	public Company getCompnyById(@PathVariable Long id) {
 		Optional<Company> optional = companyRepo.findById(id);
@@ -61,35 +53,49 @@ public class CompanyController {
 			return null;
 	}
 
-	@DeleteMapping("/{id}")
-	public void deleteCompnyById(@PathVariable Long id) {
-		Optional<Company> optional = companyRepo.findById(id);
-		if (optional.isPresent()) {
-			companyRepo.deleteById(id);
+	// for add new company
+	@PostMapping("/")
+	public Company addCompany(@RequestBody Company company) {
+		if (company.getEmployees().isEmpty())
+			return companyRepo.save(company);
+		else {
+			List<Employee> employee = company.getEmployees();
+			employee.stream().forEach(e -> e.setCompany(company));
+			company.setEmployees(employee);
+			return companyRepo.save(company);
 		}
 	}
 
+	// delete company by id
+	@DeleteMapping("/{id}")
+	public String deleteCompnyById(@PathVariable Long id) {
+		Optional<Company> optional = companyRepo.findById(id);
+		if (optional.isPresent()) {
+			companyRepo.deleteById(id);
+			return "successfully deleted";
+		} else
+			return "company does not exist";
+	}
+
+	// update company
 	@PutMapping("/")
-	public Company updateCompnyById(@RequestBody Company comp) {
-		return companyRepo.save(comp);
+	public Company updateCompnay(@RequestBody Company company) {
+		if (company.getEmployees() == null) {
+			List<Employee> employees = companyRepo.findById(company.getId()).get().getEmployees();
+			company.setEmployees(employees);
+			return companyRepo.save(company);
+		} else {
+			List<Employee> employees = company.getEmployees();
+			if (employees != null) {
+				employees.stream().forEach(e -> e.setCompany(company));
+				company.setEmployees(employees);
+				return companyRepo.save(company);
+			}
+			return companyRepo.save(company);
+		}
 	}
 
-	// employee functions
-	@GetMapping("/getemp")
-	public List<Employee> getAllEmployee() {
-		System.out.println("Inside getAll");
-		System.out.println(employeeRepo.findAll());
-		return employeeRepo.findAll();
-	}
-
-	@PostMapping("/addemp")
-	public Employee addEmployee(Employee employee) {
-		System.out.println("EmployeeController.addEmployee()");
-		Employee emp = employeeRepo.save(employee);
-		System.out.println(emp);
-		return emp;
-	}
-
+	// getting list of employee by company id
 	@GetMapping("/{id}/employees")
 	public List<Employee> getAllEmployeeByCompanyId(@PathVariable Long id) {
 		Optional<Company> findById = companyRepo.findById(id);
@@ -100,4 +106,59 @@ public class CompanyController {
 			return null;
 	}
 
+	// getting employee by company id
+	@GetMapping("/{id}/employees/{empId}")
+	public Employee getEmployeeByCompanyId(@PathVariable("id") Long id, @PathVariable("empId") Long empId) {
+		Optional<Company> findById = companyRepo.findById(id);
+		if (findById.isPresent()) {
+			Company company = findById.get();
+			System.out.println(company);
+			Optional<Employee> emps = company.getEmployees().stream().filter(a -> a.getId().equals(empId)).findAny();
+			if (emps.isPresent()) {
+				return emps.get();
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+
+	// add employee by company id
+	@PostMapping("/{id}/employees")
+	public Employee addEmployeeByCompanyId(@PathVariable("id") Long id, @RequestBody Employee employee) {
+		Optional<Company> optional = companyRepo.findById(id);
+		if (optional.isPresent()) {
+			Company company = optional.get();
+			employee.setCompany(company);
+			company.getEmployees().add(employee);
+			companyRepo.save(company);
+			return employee;
+		}
+		return null;
+	}
+
+	// delete employee by company id
+	@DeleteMapping("/{id}/employees/{empId}")
+	public String deleteEmployeeByCompanyId(@PathVariable("id") Long id, @PathVariable("empId") Long empId) {
+		Optional<Company> comp = companyRepo.findById(id);
+		if (comp.isPresent()) {
+			List<Employee> empList = comp.get().getEmployees();
+			Optional<Employee> emp = employeeRepo.findById(empId);
+			if (emp.isPresent()) {
+				if (empList.contains(emp.get())) {
+					empList.remove(emp.get());
+					employeeRepo.deleteById(emp.get().getId());
+					return "Employee deleted successfully";
+				} else {
+					return "Employee does not exist in this company";
+				}
+			} else {
+				return "Employee does not exist";
+			}
+		} else {
+			return "Company does not exist";
+		}
+
+	}
 }
