@@ -18,6 +18,8 @@ import com.innogent.abhi.entity.Employee;
 import com.innogent.abhi.repo.CompanyRepo;
 import com.innogent.abhi.repo.EmployeeRepo;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 @RequestMapping("/companies")
 public class CompanyController {
@@ -34,7 +36,7 @@ public class CompanyController {
 	}
 
 	/**
-	 * For getting list of companies
+	 * For Getting List Of Companies
 	 * 
 	 * @return List<Company>
 	 */
@@ -43,7 +45,11 @@ public class CompanyController {
 		return companyRepo.findAll();
 	}
 
-	// for getting company by id
+	/**
+	 * For Getting Company By Id
+	 * 
+	 * @return Company
+	 */
 	@GetMapping("/{id}")
 	public Company getCompnyById(@PathVariable Long id) {
 		Optional<Company> optional = companyRepo.findById(id);
@@ -53,10 +59,15 @@ public class CompanyController {
 			return null;
 	}
 
-	// for add new company
+	/**
+	 * For Adding New Company
+	 * 
+	 * @return Company
+	 */
 	@PostMapping("/")
 	public Company addCompany(@RequestBody Company company) {
-		if (company.getEmployees().isEmpty())
+		System.out.println(company);
+		if (company.getEmployees() == null && company.getEmployees().isEmpty())
 			return companyRepo.save(company);
 		else {
 			List<Employee> employee = company.getEmployees();
@@ -66,7 +77,11 @@ public class CompanyController {
 		}
 	}
 
-	// delete company by id
+	/**
+	 * For Delete Company By Id
+	 * 
+	 * @return String
+	 */
 	@DeleteMapping("/{id}")
 	public String deleteCompnyById(@PathVariable Long id) {
 		Optional<Company> optional = companyRepo.findById(id);
@@ -98,30 +113,14 @@ public class CompanyController {
 	// getting list of employee by company id
 	@GetMapping("/{id}/employees")
 	public List<Employee> getAllEmployeeByCompanyId(@PathVariable Long id) {
-		Optional<Company> findById = companyRepo.findById(id);
-		if (findById.isPresent()) {
-			Company company = findById.get();
-			return company.getEmployees();
-		} else
-			return null;
+		return employeeRepo.findByCompanyId(id);
 	}
 
 	// getting employee by company id
-	@GetMapping("/{id}/employees/{empId}")
-	public Employee getEmployeeByCompanyId(@PathVariable("id") Long id, @PathVariable("empId") Long empId) {
-		Optional<Company> findById = companyRepo.findById(id);
-		if (findById.isPresent()) {
-			Company company = findById.get();
-			System.out.println(company);
-			Optional<Employee> emps = company.getEmployees().stream().filter(a -> a.getId().equals(empId)).findAny();
-			if (emps.isPresent()) {
-				return emps.get();
-			} else {
-				return null;
-			}
-		} else {
-			return null;
-		}
+	@GetMapping("/{cId}/employees/{empId}")
+	public Employee getEmployeeByCompanyId(@PathVariable("cId") Long cId,
+			@PathVariable("empId") Long empId) {
+		return employeeRepo.findByIdAndCompanyId(empId, cId);
 	}
 
 	// add employee by company id
@@ -139,26 +138,8 @@ public class CompanyController {
 	}
 
 	// delete employee by company id
-	@DeleteMapping("/{id}/employees/{empId}")
-	public String deleteEmployeeByCompanyId(@PathVariable("id") Long id, @PathVariable("empId") Long empId) {
-		Optional<Company> comp = companyRepo.findById(id);
-		if (comp.isPresent()) {
-			List<Employee> empList = comp.get().getEmployees();
-			Optional<Employee> emp = employeeRepo.findById(empId);
-			if (emp.isPresent()) {
-				if (empList.contains(emp.get())) {
-					empList.remove(emp.get());
-					employeeRepo.deleteById(emp.get().getId());
-					return "Employee deleted successfully";
-				} else {
-					return "Employee does not exist in this company";
-				}
-			} else {
-				return "Employee does not exist";
-			}
-		} else {
-			return "Company does not exist";
-		}
-
+	@DeleteMapping("/{cId}/employees/{empId}")
+	public void deleteEmployeeByCompanyId(@PathVariable("cId") Long cId, @PathVariable("empId") Long empId) {
+		employeeRepo.deleteByIdAndCompanyId(empId, cId);
 	}
 }

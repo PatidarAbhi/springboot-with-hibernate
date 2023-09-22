@@ -15,7 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Company implements Serializable {
+public class Company {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -23,13 +23,12 @@ public class Company implements Serializable {
 	private Long id;
 
 	private String name;
-	//findByIdAndComap
+	// findByIdAndComap
 
 	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Employee> employees;
 
 	public Company() {
-		
 	}
 
 	public Company(String name, List<Employee> employees) {
@@ -66,8 +65,5 @@ public class Company implements Serializable {
 	public String toString() {
 		return "Company [id=" + id + ", name=" + name + ", employees=" + employees + "]";
 	}
-	
-
-
 
 }
