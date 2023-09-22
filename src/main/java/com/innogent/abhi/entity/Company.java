@@ -23,6 +23,7 @@ public class Company implements Serializable {
 	private Long id;
 
 	private String name;
+	//findByIdAndComap
 
 	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Employee> employees;
