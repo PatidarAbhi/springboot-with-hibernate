@@ -24,10 +24,10 @@ public class Company {
 
 	private String name;
 	// findByIdAndComap
+    
 
-	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "company", cascade = CascadeType.ALL /* ,fetch = FetchType.EAGER*/)
 	private List<Employee> employees;
-
 	public Company() {
 	}
 

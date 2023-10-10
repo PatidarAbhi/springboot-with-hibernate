@@ -8,6 +8,7 @@ public class EmployeeRestApiApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EmployeeRestApiApplication.class, args);
+		
 	}
 
 }

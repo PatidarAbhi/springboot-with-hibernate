@@ -1,5 +1,6 @@
 package com.innogent.abhi.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,12 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.innogent.abhi.dto.EmployeeDTO;
 import com.innogent.abhi.entity.Company;
 import com.innogent.abhi.entity.Employee;
 import com.innogent.abhi.repo.CompanyRepo;
 import com.innogent.abhi.repo.EmployeeRepo;
-
-import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/companies")
@@ -42,6 +42,7 @@ public class CompanyController {
 	 */
 	@GetMapping("/")
 	public List<Company> getAllComapny() {
+		System.out.println("companies::" + companyRepo.findAll());
 		return companyRepo.findAll();
 	}
 
@@ -64,10 +65,10 @@ public class CompanyController {
 	 * 
 	 * @return Company
 	 */
-	@PostMapping("/")
+	@PostMapping("/addComp")
 	public Company addCompany(@RequestBody Company company) {
 		System.out.println(company);
-		if (company.getEmployees() == null && company.getEmployees().isEmpty())
+		if (company.getEmployees() == null || company.getEmployees().isEmpty())
 			return companyRepo.save(company);
 		else {
 			List<Employee> employee = company.getEmployees();
@@ -92,10 +93,14 @@ public class CompanyController {
 			return "company does not exist";
 	}
 
-	// update company
+	/**
+	 * For Update Company
+	 * 
+	 * @return Company
+	 */
 	@PutMapping("/")
 	public Company updateCompnay(@RequestBody Company company) {
-		if (company.getEmployees() == null) {
+		if (company.getEmployees() == null || company.getEmployees().isEmpty()) {
 			List<Employee> employees = companyRepo.findById(company.getId()).get().getEmployees();
 			company.setEmployees(employees);
 			return companyRepo.save(company);
@@ -110,20 +115,52 @@ public class CompanyController {
 		}
 	}
 
-	// getting list of employee by company id
+	/**
+	 * For Getting list of Employee By Company Id
+	 * 
+	 * @return List<Employee>
+	 */
 	@GetMapping("/{id}/employees")
-	public List<Employee> getAllEmployeeByCompanyId(@PathVariable Long id) {
-		return employeeRepo.findByCompanyId(id);
+	public List<EmployeeDTO> getAllEmployeeByCompanyId(@PathVariable Long id) {
+		/*
+		 * List<Employee> employees = employeeRepo.findByCompanyId(id);
+		 * List<EmployeeDTO> employeeDTOs = new ArrayList<>();
+		 * System.out.println("normal employe::" + employees); ; for (Employee employee
+		 * : employees) { EmployeeDTO employeeDTO = new EmployeeDTO();
+		 * employeeDTO.setId(employee.getId()); employeeDTO.setName(employee.getName());
+		 * employeeDTO.setDoj(employee.getDoj());
+		 * 
+		 * // Map company data to the DTO Company company = employee.getCompany(); if
+		 * (company != null) { employeeDTO.setCompanyId(company.getId());
+		 * employeeDTO.setCompanyName(company.getName()); }
+		 * 
+		 * employeeDTOs.add(employeeDTO); } System.out.println("employee" +
+		 * employeeDTOs);
+		 * 
+		 * return employeeDTOs;
+		 */	
+		
+		System.out.println("dtos");
+		return employeeRepo.findEmployeeDTOsByCompanyId(id);
+		
 	}
 
-	// getting employee by company id
+	/**
+	 * For Getting Employee By Id And Company Id
+	 * 
+	 * @return Employee
+	 */
 	@GetMapping("/{cId}/employees/{empId}")
-	public Employee getEmployeeByCompanyId(@PathVariable("cId") Long cId,
+	public EmployeeDTO getEmployeeByCompanyId(@PathVariable("cId") Long cId,
 			@PathVariable("empId") Long empId) {
-		return employeeRepo.findByIdAndCompanyId(empId, cId);
+		return employeeRepo.findEmployeeDTOByIdAndCompnayId(empId, cId);
 	}
 
-	// add employee by company id
+	/**
+	 * For Adding Employee By Company Id
+	 * 
+	 * @return Employee
+	 */
 	@PostMapping("/{id}/employees")
 	public Employee addEmployeeByCompanyId(@PathVariable("id") Long id, @RequestBody Employee employee) {
 		Optional<Company> optional = companyRepo.findById(id);
@@ -137,9 +174,69 @@ public class CompanyController {
 		return null;
 	}
 
-	// delete employee by company id
+	/**
+	 * For Delete Employee By Id And Company Id
+	 * 
+	 * @return Employee
+	 */
 	@DeleteMapping("/{cId}/employees/{empId}")
 	public void deleteEmployeeByCompanyId(@PathVariable("cId") Long cId, @PathVariable("empId") Long empId) {
 		employeeRepo.deleteByIdAndCompanyId(empId, cId);
 	}
+
+	/**
+	 * For find Employees
+	 * 
+	 * @return List<Employee>
+	 */
+	/*
+	 * @GetMapping("getEmp") public List<Employee> getAllEmployee() { return
+	 * employeeRepo.findAll(); }
+	 */
+		@GetMapping("getEmp")
+		public List<EmployeeDTO> getAllEmployee() {
+			
+			return employeeRepo.findAllEmployeeDTOs();
+	}
+
+	/**
+	 * For delete Employee
+	 * 
+	 * @return
+	 */
+	@DeleteMapping("/delete/{id}")
+	public String deletEmployeeById(@PathVariable Long id) {
+		Optional<Employee> emp = employeeRepo.findById(id);
+		if (emp.isPresent()) {
+			employeeRepo.delete(emp.get());
+			return "succsess";
+		} else {
+			return "fail";
+		}
+	}
+
+	
+	@PutMapping("/update")
+	public Employee updateEmp(@RequestBody Employee emp) {
+		System.out.println("CompanyController.updateEmp()");
+		System.out.println("emp is" + emp);
+		Employee existingEmployee = employeeRepo.findById(emp.getId()).get();
+		System.out.println(existingEmployee);
+		if (existingEmployee != null) {
+			Company existingCompany = existingEmployee.getCompany();
+			emp.setCompany(existingCompany);
+			return employeeRepo.save(emp);
+		} else
+			return null;
+	}
+	
+	
+	  @DeleteMapping("/byName/{id}") 
+	  public void deleteByName(@PathVariable Long id) 
+	  { 
+		  //here we do not need any @Teransaction annotaion
+		 //employeeRepo.deleteById(id);
+	  }
+	 
+
 }
